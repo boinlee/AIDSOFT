@@ -1051,6 +1051,7 @@
                 <p>• <strong>수집·이용 목적:</strong> 문의 접수 및 확인, 상담 관련 연락·회신</p>
                 <p>• <strong>보유 및 이용 기간:</strong> 문의 처리 및 회신 완료 후 1년간 보관 후 파기</p>
                 <p>• <strong>처리위탁 · 국외이전:</strong> 문의 접수 처리를 Formspree, Inc.(미국)에 위탁하며 위 항목이 미국으로 이전됩니다.</p>
+                <p>• <strong>문의 기록 저장:</strong> 문의 내용은 접수 관리 목적으로 Supabase 서울 리전 데이터베이스에 함께 저장됩니다.</p>
                 <p>• <strong>동의 거부 권리:</strong> 동의를 거부할 수 있으나 이 경우 문의 접수가 제한됩니다. 이 경우 대표 이메일·전화로 문의하실 수 있습니다.</p>
                 <p class="pt-1">자세한 내용은 <button type="button" data-modal-open="privacyModal" class="underline text-accent font-medium">개인정보처리방침</button>에서 확인하실 수 있습니다.</p>
               </div>
@@ -1117,7 +1118,8 @@
           · 위탁 업무: 홈페이지 문의 양식 접수 및 담당자 이메일 전달<br />
           · 이전 항목: 성함, 회사/기관명, 이메일, 연락처, 문의 유형, 문의 내용<br />
           · 이전 국가·시점·방법: 미국 / 문의 전송 시점에 정보통신망을 통해 전송<br />
-          · 보유·이용 기간: 위탁 목적 달성 시까지
+          · 보유·이용 기간: 위탁 목적 달성 시까지<br />
+          · 문의 기록 저장: Supabase 서울 리전 데이터베이스(대한민국)에 문의 접수 관리 목적으로 저장
         </p>
         <p>이용자는 국외 이전을 거부할 수 있으며, 이 경우 온라인 양식 대신 대표 이메일 또는 대표 전화로 문의하실 수 있습니다.</p>
         <h4 class="font-bold text-ink">6. 개인정보의 안전성 확보조치</h4>
@@ -1376,6 +1378,20 @@
       button.addEventListener('click', function () { setCategory(button.getAttribute('data-category')); });
     });
 
+    function saveInquiryToSupabase(formData) {
+      var payload = {};
+      formData.forEach(function (value, key) { payload[key] = value; });
+      return fetch('https://aqhojipsdrnygucquhpj.supabase.co/functions/v1/contact-inquiry', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'apikey': 'sb_publishable_34glfwXQg8D3HSul0zEqaQ_OnbDX10U'
+        },
+        body: JSON.stringify(payload)
+      }).then(function (response) {
+        if (!response.ok) throw new Error('Supabase HTTP ' + response.status);
+      });
+    }
     /* contact form async submission & validation (P0 2-3 & P1 3-11) */
     var contactForm = document.getElementById('contactForm');
     if (contactForm) {
@@ -1412,6 +1428,9 @@
           }
         }).then(function(response) {
           if (response.ok) {
+            saveInquiryToSupabase(formData).catch(function (error) {
+              console.warn('Supabase inquiry storage failed:', error);
+            });
             contactForm.reset();
             setCategory('general'); // reset() 후 카테고리 버튼 표시와 hidden 값 동기화
             if (status) {
