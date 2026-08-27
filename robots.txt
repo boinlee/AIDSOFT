@@ -1,0 +1,5 @@
+User-agent: *
+Disallow: /
+
+Sitemap: https://aidsoft.co.kr/sitemap.xml
+
